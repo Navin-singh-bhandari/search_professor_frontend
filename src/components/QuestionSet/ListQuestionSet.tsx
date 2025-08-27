@@ -1,7 +1,15 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Typography,
+  Stack,
+} from "@mui/material";
 
 export interface IListQuestionSet {
   _id: string;
@@ -12,7 +20,7 @@ export interface IListQuestionSet {
 function ListQuestionSet() {
   const [questionSets, setQuestionSet] = useState<IListQuestionSet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
@@ -29,10 +37,10 @@ function ListQuestionSet() {
           },
         })
         .then((response) => {
-          setQuestionSet(response?.data?.questionSet);
+          setQuestionSet(response?.data?.questionSet || []);
           setIsLoading(false);
         })
-        .catch((error) => {
+        .catch(() => {
           setIsLoading(false);
         });
     }
@@ -41,32 +49,57 @@ function ListQuestionSet() {
   }, []);
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
-  if (questionSets.length === 0) return <p>No question sets found.</p>;
+
+  if (questionSets.length === 0) {
+    return (
+      <Typography variant="body1" sx={{ mt: 3 }}>
+        No question sets found.
+      </Typography>
+    );
+  }
 
   return (
-    <div>
-      
-      <h2>My Question Sets</h2>
-      
-      <ul>
+    <Box sx={{ maxWidth: 700, mx: "auto", mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        My Question Sets
+      </Typography>
+
+      <Stack spacing={2}>
         {questionSets.map((question) => {
           const TakeQuizHandler = () => {
-            Navigate(`/questionset/${question._id}/attempt`);
+            navigate(`/questionset/${question._id}/attempt`);
           };
+
           return (
-            <li key={question._id} style={{ display: "flex", gap: "1rem" }}>
-              <p>
-                <strong>{question.title}</strong> — {question.questionCount}{" "}
-                questions
-              </p>
-              <button onClick={TakeQuizHandler}>Take Quiz</button>
-            </li>
+            <Card key={question._id} variant="outlined">
+              <CardContent
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <Box>
+                  <Typography variant="h6">{question.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {question.questionCount} questions
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={TakeQuizHandler}
+                >
+                  Take Quiz
+                </Button>
+              </CardContent>
+            </Card>
           );
         })}
-      </ul>
-    </div>
+      </Stack>
+    </Box>
   );
 }
 

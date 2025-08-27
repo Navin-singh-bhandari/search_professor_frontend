@@ -7,6 +7,17 @@ import {
   useFormContext,
 } from "react-hook-form";
 import axios from "axios";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Typography,
+  Stack,
+} from "@mui/material";
 
 export interface IAttemptQuizFinalData {
   questionSet: string;
@@ -21,13 +32,15 @@ function AttemptQuizForm({
 }: {
   questionSet: IAttempQuestionForm;
 }) {
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
+
   const defaultValues: IAttempQuestionForm = {
     ...questionSet,
   };
-  const methods = useForm({ defaultValues });
 
+  const methods = useForm({ defaultValues });
   const { watch, register, handleSubmit } = methods;
+
   console.log("form values => ", watch());
 
   const onSubmitHandler = (data: IAttempQuestionForm) => {
@@ -55,30 +68,47 @@ function AttemptQuizForm({
         alert("Answer Set Updated Successfully");
         setResult(res.data.data);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        console.error("Error submitting answers:", err);
+      });
   };
 
   if (result) {
     return (
-      <p>
-        Your Score is {result?.score || 0} out of {result?.total || 0} question
-        attempt.
-      </p>
+      <Typography variant="h6" sx={{ mt: 2 }}>
+        ✅ Your Score is <strong>{result?.score || 0}</strong> out of{" "}
+        <strong>{result?.total || 0}</strong> questions attempted.
+      </Typography>
     );
   }
+
   return (
-    <div>
+    <Box sx={{ maxWidth: 700, mx: "auto", mt: 4 }}>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmitHandler)}>
-          <div>
-            <label>Enter Title</label>
-            <input {...register("title")} placeholder="Enter Title" />
-          </div>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Quiz Title
+              </Typography>
+              <TextField
+                fullWidth
+                label="Enter Title"
+                {...register("title")}
+              />
+            </CardContent>
+          </Card>
+
           <CreateQuestions />
-          <button type="submit">Submit Answer</button>
+
+          <Stack direction="row" justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained" color="primary">
+              Submit Answer
+            </Button>
+          </Stack>
         </form>
       </FormProvider>
-    </div>
+    </Box>
   );
 }
 
@@ -91,17 +121,21 @@ function CreateQuestions() {
   });
 
   return (
-    <div>
-      <h1>Create Questions</h1>
-      {fields?.map((field, index) => {
-        return (
-          <div key={index}>
-            <p>{field?.questionText}</p>
+    <Box>
+      <Typography variant="h5" gutterBottom>
+        Questions
+      </Typography>
+      {fields?.map((field, index) => (
+        <Card key={index} sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="subtitle1" gutterBottom>
+              {field?.questionText}
+            </Typography>
             <CreateChoices questionIndex={index} />
-          </div>
-        );
-      })}
-    </div>
+          </CardContent>
+        </Card>
+      ))}
+    </Box>
   );
 }
 
@@ -114,24 +148,21 @@ function CreateChoices({ questionIndex }: { questionIndex: number }) {
   });
 
   return (
-    <div>
-      {fields?.map((field, index) => {
-        return (
-          <div
-            key={index}
-            style={{ display: "flex", gap: "1rem", paddingLeft: "1rem" }}
-          >
-            <input
-              type="checkbox"
+    <Box sx={{ pl: 2 }}>
+      {fields?.map((field, index) => (
+        <FormControlLabel
+          key={index}
+          control={
+            <Checkbox
               {...register(
                 `questions.${questionIndex}.choices.${index}.selected`
               )}
             />
-            <p>{field?.text}</p>
-          </div>
-        );
-      })}
-    </div>
+          }
+          label={field?.text}
+        />
+      ))}
+    </Box>
   );
 }
 

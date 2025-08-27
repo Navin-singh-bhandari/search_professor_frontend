@@ -1,35 +1,36 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Typography,
+} from "@mui/material";
 
-function ProfilePage() {
+function EditProfilePage() {
   const defaultValues = {
     name: "",
     bio: "",
     email: "",
     skills: "React,Node",
-    config: {
-      mode: "view",
-    },
   };
 
-  const methods = useForm({ defaultValues });
-  const { watch, reset, setValue, register, handleSubmit } = methods;
+  const { register, reset, handleSubmit } = useForm({ defaultValues });
 
   useEffect(() => {
     // Simulate backend fetch
     const fetchProfile = async () => {
       try {
-        // Replace with actual API call:
-        // const response = await axios.get('/api/profile');
-        // reset(response.data);
-
         const backendResponse = {
           name: "Nabin Bhandari",
           bio: "I am a software engineer with a passion for building web applications.",
           email: "Nabin@gmail.com",
           skills: "React, Node, Express",
-          config: { mode: "view" },
         };
         reset(backendResponse);
       } catch (error) {
@@ -40,23 +41,14 @@ function ProfilePage() {
     fetchProfile();
   }, [reset]);
 
-  const data = watch();
-
-  const OnClickEdit = () => {
-    setValue("config.mode", "edit");
-  };
-
-  const GoBackButton = () => {
-    setValue("config.mode", "view");
-  };
-
-  // Handle update permanently
   const onUpdate = async (data: any) => {
     try {
-      const response = await axios.post("http://localhost:3000/api/profile/update", data);
+      const response = await axios.post(
+        "http://localhost:3000/api/profile/update",
+        data
+      );
       if (response.data.success) {
-        reset(response.data.data); // update form with backend data
-        setValue("config.mode", "view");
+        reset(response.data.data);
         alert("Profile updated successfully!");
       }
     } catch (error) {
@@ -66,44 +58,82 @@ function ProfilePage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Profile Page</h1>
+    <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+      <Card sx={{ width: "70%", p: 3 }}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            ✏️ Edit Profile
+          </Typography>
+          <form onSubmit={handleSubmit(onUpdate)}>
+            <Grid container spacing={3}>
+              {/* Left column with avatar */}
+              <Grid
+                item
+                xs={12}
+                md={4}
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Avatar sx={{ width: 100, height: 100 }}>
+                  {defaultValues?.name?.[0] || "U"}
+                </Avatar>
+                <Button variant="outlined" size="small">
+                  Change Avatar
+                </Button>
+              </Grid>
 
-      {data?.config?.mode === "view" && (
-        <div>
-          <button onClick={OnClickEdit} style={{ marginBottom: "1rem" }}>
-            Edit Profile
-          </button>
-          <div style={{ padding: "1rem", border: "1px solid #ccc", borderRadius: "8px", maxWidth: "400px" }}>
-            <p><strong>Name:</strong> {data?.name}</p>
-            <p><strong>Email:</strong> {data?.email}</p>
-            <p><strong>Bio:</strong> {data?.bio}</p>
-            <p><strong>Skills:</strong> {data?.skills}</p>
-          </div>
-        </div>
-      )}
+              {/* Right column with form */}
+              <Grid item xs={12} md={8}>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  margin="normal"
+                  {...register("name")}
+                />
+                <TextField
+                  fullWidth
+                  label="Email"
+                  margin="normal"
+                  {...register("email")}
+                />
+                <TextField
+                  fullWidth
+                  label="Bio"
+                  margin="normal"
+                  multiline
+                  rows={3}
+                  {...register("bio")}
+                />
+                <TextField
+                  fullWidth
+                  label="Skills"
+                  margin="normal"
+                  {...register("skills")}
+                />
 
-      {data?.config?.mode === "edit" && (
-        <form
-          style={{ display: "flex", flexDirection: "column", width: "400px" }}
-          onSubmit={handleSubmit(onUpdate)}
-        >
-          <input {...register("name")} placeholder="Name" style={{ marginBottom: "0.5rem", padding: "0.5rem" }} />
-          <input {...register("email")} placeholder="Email" style={{ marginBottom: "0.5rem", padding: "0.5rem" }} />
-          <textarea {...register("bio")} placeholder="Bio" style={{ marginBottom: "0.5rem", padding: "0.5rem" }} />
-          <input {...register("skills")} placeholder="Skills" style={{ marginBottom: "0.5rem", padding: "0.5rem" }} />
-          <div style={{ marginTop: "1rem" }}>
-            <button type="button" onClick={GoBackButton} style={{ marginRight: "0.5rem" }}>
-              Go Back
-            </button>
-            <button type="submit">Update</button>
-          </div>
-        </form>
-      )}
-      
-    </div>
-    
+                <Box sx={{ mt: 3, textAlign: "right" }}>
+                  <Button
+                    variant="outlined"
+                    sx={{ mr: 2 }}
+                    onClick={() => reset(defaultValues)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="contained" color="primary">
+                    Save Changes
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
+          </form>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }
 
-export default ProfilePage;
+export default EditProfilePage;
